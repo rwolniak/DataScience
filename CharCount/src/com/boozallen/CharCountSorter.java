@@ -11,6 +11,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 public class CharCountSorter {
 	
+	//comparator used to compare integers
 	public static class IntComparator extends WritableComparator {
 
 	     public IntComparator() {
@@ -20,20 +21,20 @@ public class CharCountSorter {
 	     @Override
 	     public int compare(byte[] b1, int s1, int l1,
 	             byte[] b2, int s2, int l2) {
-
 	         Integer v1 = ByteBuffer.wrap(b1, s1, l1).getInt();
 	         Integer v2 = ByteBuffer.wrap(b2, s2, l2).getInt();
-
 	         return v1.compareTo(v2);
 	     }
 	 }
 	
+	//mapper which takes in the output from CharCount and outputs it as val,key so that a secondary sort will occur
 	public static class SimpleMapper 
 	extends Mapper<Object, Text, IntWritable, Text>{
 		private Text aChar = new Text();
 
 		public void map(Object key, Text value, Context context
                  ) throws IOException, InterruptedException {
+			//split the string by tab
 			String line = value.toString();
 			String[] tokens = line.split("\t");
 			
@@ -43,12 +44,14 @@ public class CharCountSorter {
 				aChar.set(tokens[0]);
 				context.write(new IntWritable(valuePart), aChar);
 			} catch (NumberFormatException e){
+				//catch the error if the token is not an integer
 				System.err.println("ERROR :  token was not an integer : " + tokens[1]);
 			}
 			
 		}
 	}
 
+	//output the sorted list of characters (sorted by number of occurrences)
 	public static class SimpleReducer
     extends Reducer<IntWritable,Text,Text,IntWritable> {
 
