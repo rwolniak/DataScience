@@ -23,7 +23,8 @@ public class CharCountSorter {
 	             byte[] b2, int s2, int l2) {
 	         Integer v1 = ByteBuffer.wrap(b1, s1, l1).getInt();
 	         Integer v2 = ByteBuffer.wrap(b2, s2, l2).getInt();
-	         return v1.compareTo(v2);
+	         System.out.println(v1 + " " + v2 + " " + v1.compareTo(v2));
+	         return v1.compareTo(v2) * -1;
 	     }
 	 }
 	

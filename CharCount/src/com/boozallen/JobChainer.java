@@ -40,6 +40,8 @@ public class JobChainer {
 		job2.setJarByClass(CharCountSorter.class);
 		job2.setMapperClass(CharCountSorter.SimpleMapper.class);
 		job2.setReducerClass(CharCountSorter.SimpleReducer.class);
+		//sort keys in descending order
+		job2.setSortComparatorClass(CharCountSorter.IntComparator.class);
 		job2.setMapOutputKeyClass(IntWritable.class);
 		job2.setMapOutputValueClass(Text.class);
 		job2.setOutputKeyClass(Text.class);
