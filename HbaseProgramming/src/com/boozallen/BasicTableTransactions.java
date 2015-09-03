@@ -6,14 +6,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hbase.util.MurmurHash;
+import org.apache.hadoop.hbase.util.MD5Hash;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class BasicTableTransactions {
 	
-	//Murmur hash seems to provide the best medium of speed and distribution
-	private static final MurmurHash nameHash = new MurmurHash();
 	//Log
 	private static final Log LOG = LogFactory.getLog(BasicTableTransactions.class);
 	
@@ -32,9 +30,7 @@ public class BasicTableTransactions {
 		//convert first and last name to byte array
 		byte[] nameBytes = Bytes.add(Bytes.toBytes(fname),Bytes.toBytes(lname));
 		//hash the byte array so the HBase table is optimized with an even distribution of keys
-		long hash = nameHash.hash(nameBytes);
-		//convert the hash to a byte array and return it
-		return Bytes.toBytes(hash);
+		return Bytes.toBytes(MD5Hash.getMD5AsHex(nameBytes));
 	}
 	
 	//insert a single record into the HBase table
@@ -68,9 +64,13 @@ public class BasicTableTransactions {
 	}
 	
 	//scan for records in the table
-	private static void scanTable(Admin admin, Table table){
+	public static void scanTable(Admin admin, Table table){
 		//scan to find Ben Howard
 		Scan s = new Scan(hashName("Ben","Howard"),hashName("Ben","Howard"));
+		System.out.println(hashName("Ben","Howard"));
+		System.out.println(hashName("Ben","Howard"));
+		System.out.println(hashName("Ben","Howard"));
+		System.out.println(hashName("Ben","Howard"));
 		//specify a specific column family to scan
 		s.addFamily(Bytes.toBytes("customer_data"));
 		try {
@@ -79,9 +79,11 @@ public class BasicTableTransactions {
 			ResultScanner results = table.getScanner(s);
 			LOG.info("After scanning");
 			//loop through the results
+			System.out.println(results.next().toString());
 			for(Result r =  results.next(); r != null; r = results.next()){
 				//print results
 				LOG.info("Found it: " + r);
+				System.out.println("Found it: " + r);
 			}
 			results.close();
 		} catch (IOException e) {
