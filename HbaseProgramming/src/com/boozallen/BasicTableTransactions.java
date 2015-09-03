@@ -1,18 +1,21 @@
 package com.boozallen;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.MurmurHash;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class BasicTableTransactions {
 	
 	//Murmur hash seems to provide the best medium of speed and distribution
 	private static final MurmurHash nameHash = new MurmurHash();
+	//Log
+	private static final Log LOG = LogFactory.getLog(BasicTableTransactions.class);
 	
 	//create table if it doesn't already exist
 	private static void createTable(Admin admin, TableName table) throws IOException{		
@@ -59,6 +62,33 @@ public class BasicTableTransactions {
 	//insert some records into the table
 	private static void insertToTable(Admin admin, Table table){
 		insertRecord(admin, table, "Taylor", "Swift");
+		insertRecord(admin, table, "Ben", "Howard");
+		insertRecord(admin, table, "Major", "Lazer");
+		insertRecord(admin, table, "Jane", "Doze");
+	}
+	
+	//scan for records in the table
+	private static void scanTable(Admin admin, Table table){
+		//scan to find Ben Howard
+		Scan s = new Scan(hashName("Ben","Howard"),hashName("Ben","Howard"));
+		//specify a specific column family to scan
+		s.addFamily(Bytes.toBytes("customer_data"));
+		try {
+			LOG.info("Before scanning");
+			//scan the table
+			ResultScanner results = table.getScanner(s);
+			LOG.info("After scanning");
+			//loop through the results
+			for(Result r =  results.next(); r != null; r = results.next()){
+				//print results
+				LOG.info("Found it: " + r);
+			}
+			results.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 	public static void main(String[] args) throws IOException {	
@@ -72,10 +102,13 @@ public class BasicTableTransactions {
 		
 		//create the table if it doesn't exist
 		createTable(admin, tableName);
-		
-		//insert records into the table
+	
 		Table table = conn.getTable(tableName);
-		insertToTable(admin, table);
+		//insert records into the table. uncomment the following line if this is your first time running the code
+		//insertToTable(admin, table);
+		
+		//scan the table
+		scanTable(admin,table);
 		
 		//close everything
 		admin.close();
