@@ -22,20 +22,18 @@ public class BasicTableTransactions {
 	private static final Log LOG = LogFactory.getLog(BasicTableTransactions.class);
 	
 	/**
-	 * Method which, given an admin and table, checks to see if the table exists, then creates it
-	 * if it does not with the given table name and two family names.
+	 * Method which, given an admin and table creates a new table with the given table name and
+	 * family name. If the table already exists, it does nothing.
 	 * @param admin
 	 * @param table
 	 * @param famName1
-	 * @param famName2
 	 * @throws IOException
 	 */
-	public static void createTable(Admin admin, TableName table, String famName1, String famName2) throws IOException{		
+	public static void createTable(Admin admin, TableName table, String famName1) throws IOException{		
 		//check if the table 'customer_data' exists. Create it if it does not
 		if(!admin.tableExists(table)){
 			HTableDescriptor tableDescriptor = new HTableDescriptor(table);
 			tableDescriptor.addFamily(new HColumnDescriptor(famName1));
-			tableDescriptor.addFamily(new HColumnDescriptor(famName2));
 			admin.createTable(tableDescriptor);
 		}
 	}
@@ -131,7 +129,7 @@ public class BasicTableTransactions {
 		TableName tableName = TableName.valueOf("business_data");
 		
 		//create the table if it doesn't exist
-		createTable(admin, tableName, "artist_data", "discography");
+		createTable(admin, tableName, "artist_data");
 	
 		Table table = conn.getTable(tableName);
 		//insert records into the table. uncomment the following line if this is your first time running the code
