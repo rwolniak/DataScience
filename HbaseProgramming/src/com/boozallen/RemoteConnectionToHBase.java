@@ -19,7 +19,7 @@ import com.boozallen.BasicTableTransactions;
  
 import com.google.protobuf.ServiceException;
 
-public class MapReduceToHBase {
+public class RemoteConnectionToHBase {
 
 	public static void main(String[] args) throws IOException {
 		//configure log4j so it can run
@@ -46,11 +46,10 @@ public class MapReduceToHBase {
 		Admin admin = conn.getAdmin();
 		//name of the table to scan
 		TableName tableName = TableName.valueOf("business_data");
-		//create table oject. assuming table already exists
+		//create table object. assuming table already exists
 		Table table = conn.getTable(tableName);
 		
-		//BasicTableTransactions.insertToTable(admin,table);
-		
+		//scan table first to see what records are in it
 		BasicTableTransactions.scanTable(admin,table,"");
 
 	}

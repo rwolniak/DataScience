@@ -1,6 +1,7 @@
 package com.boozallen;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
@@ -22,17 +23,19 @@ public class BasicTableTransactions {
 	
 	/**
 	 * Method which, given an admin and table, checks to see if the table exists, then creates it
-	 * if it does not with the given table name and family name.
+	 * if it does not with the given table name and two family names.
 	 * @param admin
 	 * @param table
-	 * @param famName
+	 * @param famName1
+	 * @param famName2
 	 * @throws IOException
 	 */
-	public static void createTable(Admin admin, TableName table, String famName) throws IOException{		
+	public static void createTable(Admin admin, TableName table, String famName1, String famName2) throws IOException{		
 		//check if the table 'customer_data' exists. Create it if it does not
 		if(!admin.tableExists(table)){
 			HTableDescriptor tableDescriptor = new HTableDescriptor(table);
-			tableDescriptor.addFamily(new HColumnDescriptor(famName));
+			tableDescriptor.addFamily(new HColumnDescriptor(famName1));
+			tableDescriptor.addFamily(new HColumnDescriptor(famName2));
 			admin.createTable(tableDescriptor);
 		}
 	}
@@ -51,13 +54,14 @@ public class BasicTableTransactions {
 	}
 	
 	/**
-	 * Method which inserts a single name record (first name and last name) into a table
+	 * Method which inserts a single name record (first name and last name) into a table, as well as their salary
 	 * @param admin
 	 * @param table
 	 * @param fname
 	 * @param lname
+	 * @param salary
 	 */
-	public static void insertNameRecord(Admin admin, Table table, String fname, String lname){
+	public static void insertNameRecord(Admin admin, Table table, String fname, String lname, int salary){
 		//hash the name of the person so the HBase table is optimized with an even distribution of keys
 		byte[] hash = hashName(fname, lname);
 		//get the current system time and convert it to a byte array
@@ -67,8 +71,10 @@ public class BasicTableTransactions {
 		//put the row key into a put object
 		Put put = new Put(rowKeyBytes);
 		//add the specified column and value to this put operation
-		put.addColumn(Bytes.toBytes("customer_data"), Bytes.toBytes("fname"), Bytes.toBytes(fname));
-		put.addColumn(Bytes.toBytes("customer_data"), Bytes.toBytes("lname"), Bytes.toBytes(lname));
+		put.addColumn(Bytes.toBytes("artist_data"), Bytes.toBytes("fname"), Bytes.toBytes(fname));
+		put.addColumn(Bytes.toBytes("artist_data"), Bytes.toBytes("lname"), Bytes.toBytes(lname));
+		put.addColumn(Bytes.toBytes("artist_data"), Bytes.toBytes("salary"),Bytes.toBytes(salary));
+		
 		//write the new data to the table
 		try {
 			table.put(put);
@@ -80,10 +86,10 @@ public class BasicTableTransactions {
 	
 	//insert some records into the table
 	public static void insertToTable(Admin admin, Table table){
-		insertNameRecord(admin, table, "Taylor", "Swift");
-		insertNameRecord(admin, table, "Ben", "Howard");
-		insertNameRecord(admin, table, "Major", "Lazer");
-		insertNameRecord(admin, table, "Jane", "Doze");
+		insertNameRecord(admin, table, "Taylor", "Swift", 64000000);
+		insertNameRecord(admin, table, "Ben", "Howard", 110000);
+		insertNameRecord(admin, table, "Major", "Lazer", 352000);
+		insertNameRecord(admin, table, "Jane", "Doze", 50000);
 	}
 	
 	/**
@@ -96,7 +102,7 @@ public class BasicTableTransactions {
 		//scan to find all records
 		Scan s = new Scan(key.getBytes(),key.getBytes());
 		//specify a specific column family to scan
-		s.addFamily(Bytes.toBytes("customer_data"));
+		s.addFamily(Bytes.toBytes("artist_data"));
 		try {
 			LOG.info("Before scanning");
 			ResultScanner results = table.getScanner(s);
@@ -104,8 +110,8 @@ public class BasicTableTransactions {
 			//loop through the results
 			for(Result r =  results.next(); r != null; r = results.next()){
 				//print first and last name of record
-				LOG.info("Found it: " + Bytes.toString(r.getValue(Bytes.toBytes("customer_data"), Bytes.toBytes("fname"))) + 
-						" " + Bytes.toString(r.getValue(Bytes.toBytes("customer_data"), Bytes.toBytes("lname"))));
+				LOG.info("Found it: " + Bytes.toString(r.getValue(Bytes.toBytes("artist_data"), Bytes.toBytes("fname"))) + 
+						" " + Bytes.toString(r.getValue(Bytes.toBytes("artist_data"), Bytes.toBytes("lname"))));
 			}
 			results.close();
 		} catch (IOException e) {
@@ -125,7 +131,7 @@ public class BasicTableTransactions {
 		TableName tableName = TableName.valueOf("business_data");
 		
 		//create the table if it doesn't exist
-		createTable(admin, tableName, "customer_data");
+		createTable(admin, tableName, "artist_data", "discography");
 	
 		Table table = conn.getTable(tableName);
 		//insert records into the table. uncomment the following line if this is your first time running the code
