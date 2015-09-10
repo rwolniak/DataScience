@@ -18,7 +18,7 @@ public class BasicTableTransactions {
 	private static final Hash HASH = MurmurHash.getInstance();
 	private static final int SEED = -1;
 	
-	//Log
+	//initialize logger
 	private static final Log LOG = LogFactory.getLog(BasicTableTransactions.class);
 	
 	/**
@@ -102,9 +102,8 @@ public class BasicTableTransactions {
 		//specify a specific column family to scan
 		s.addFamily(Bytes.toBytes("artist_data"));
 		try {
-			LOG.info("Before scanning");
 			ResultScanner results = table.getScanner(s);
-			LOG.info("After scanning");
+
 			//loop through the results
 			for(Result r =  results.next(); r != null; r = results.next()){
 				//print first and last name of record
@@ -134,9 +133,6 @@ public class BasicTableTransactions {
 		Table table = conn.getTable(tableName);
 		//insert records into the table. uncomment the following line if this is your first time running the code
 		//insertToTable(admin, table);
-		
-		//scan the table
-		scanTable(admin,table,"");
 		
 		//close everything
 		admin.close();
