@@ -32,9 +32,10 @@ public class AccumuloConnection {
 		props.load(new FileInputStream("/Users/ryanwolniak/Development/Hadoop/hadoop-2.7.1/share/hadoop/tools/sls/sample-conf/log4j.properties"));
 		PropertyConfigurator.configure(props);
 		
-		//Connect to the Accumulo and Zookeeper server. In this case, they are the same server.
+		//Connect to the Accumulo and Zookeeper server
 		String instanceName = "accumulo-instance";
-		String zooServers = "sandbox.hortonworks.com:2181";
+		//Note that this zooserver address maps to the IP address of my Hortonworks sandbox. Edit your /etc/hosts file on your local machine to contain the sandbox IP address
+		String zooServers = "sandbox.hortonworks.com";
 		Instance inst = new ZooKeeperInstance(instanceName, zooServers);
 		Connector conn = inst.getConnector("root", new PasswordToken("hadoop"));
 		
